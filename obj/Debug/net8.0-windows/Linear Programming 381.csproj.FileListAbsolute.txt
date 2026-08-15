@@ -1,0 +1,16 @@
+C:\Users\puker\source\repos\Linear Programming 381\bin\Debug\net8.0-windows\Linear Programming 381.exe
+C:\Users\puker\source\repos\Linear Programming 381\bin\Debug\net8.0-windows\Linear Programming 381.deps.json
+C:\Users\puker\source\repos\Linear Programming 381\bin\Debug\net8.0-windows\Linear Programming 381.runtimeconfig.json
+C:\Users\puker\source\repos\Linear Programming 381\bin\Debug\net8.0-windows\Linear Programming 381.dll
+C:\Users\puker\source\repos\Linear Programming 381\bin\Debug\net8.0-windows\Linear Programming 381.pdb
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear_Programming_381.Forms.MainForm.resources
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.csproj.GenerateResource.cache
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.AssemblyInfoInputs.cache
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.AssemblyInfo.cs
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.csproj.CoreCompileInputs.cache
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.dll
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\refint\Linear Programming 381.dll
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.pdb
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\Linear Programming 381.genruntimeconfig.cache
+C:\Users\puker\source\repos\Linear Programming 381\obj\Debug\net8.0-windows\ref\Linear Programming 381.dll
