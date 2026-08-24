@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using Linear_Programming_381.Algorithms.Primal_Simplex;
+using Linear_Programming_381.Algorithms.Revised_Simplex;
+using Linear_Programming_381.Algorithms.Cutting_Plane;
 using Linear_Programming_381.Core;
 using Linear_Programming_381.File_Handling;
 using Linear_Programming_381.Models;
@@ -140,6 +142,114 @@ namespace Linear_Programming_381.Forms
                     Color.DarkRed;
             }
         }
+
+        private void btnRevisedSimplex_Click(
+            object sender,
+            EventArgs e)
+        {
+            try
+            {
+                if (currentModel == null)
+                {
+                    MessageBox.Show(
+                        "Please load a programming model first.",
+                        "No Model",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+                currentTableau = null;
+                txtOutput.Clear();
+                txtOutput.AppendText(
+                    "REVISED PRIMAL SIMPLEX (PRODUCT FORM / PRICE-OUT)\r\n");
+                txtOutput.AppendText(
+                    "========================================\r\n\r\n");
+                RevisedSimplexSolver solver =
+                    new RevisedSimplexSolver();
+                currentSolution =
+                    solver.Solve(
+                        currentModel);
+                foreach (string iteration
+                         in currentSolution.Iterations)
+                {
+                    txtOutput.AppendText(
+                        iteration);
+                    txtOutput.AppendText(
+                        "\r\n");
+                }
+                DisplaySolution();
+                lblStatus.Text =
+                    "Revised Simplex completed.";
+                lblStatus.ForeColor =
+                    Color.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Solver Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                lblStatus.Text =
+                    "Unable to solve model.";
+                lblStatus.ForeColor =
+                    Color.DarkRed;
+            }
+        }
+        private void btnCuttingPlane_Click(
+            object sender,
+            EventArgs e)
+        {
+            try
+            {
+                if (currentModel == null)
+                {
+                    MessageBox.Show(
+                        "Please load a programming model first.",
+                        "No Model",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+                currentTableau = null;
+                txtOutput.Clear();
+                txtOutput.AppendText(
+                    "CUTTING PLANE ALGORITHM (GOMORY CUTS)\r\n");
+                txtOutput.AppendText(
+                    "========================================\r\n\r\n");
+                CuttingPlaneSolver solver =
+                    new CuttingPlaneSolver();
+                currentSolution =
+                    solver.Solve(
+                        currentModel);
+                foreach (string iteration
+                         in currentSolution.Iterations)
+                {
+                    txtOutput.AppendText(
+                        iteration);
+                    txtOutput.AppendText(
+                        "\r\n");
+                }
+                DisplaySolution();
+                lblStatus.Text =
+                    "Cutting Plane completed.";
+                lblStatus.ForeColor =
+                    Color.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Solver Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                lblStatus.Text =
+                    "Unable to solve model.";
+                lblStatus.ForeColor =
+                    Color.DarkRed;
+            }
+        }
+
         private void btnExport_Click(
             object sender,
             EventArgs e)

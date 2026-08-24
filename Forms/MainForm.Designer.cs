@@ -33,6 +33,8 @@ namespace Linear_Programming_381.Forms
         private Button btnBrowse;
         private Button btnLoad;
         private Button btnSolve;
+        private Button btnRevisedSimplex;
+        private Button btnCuttingPlane;
         private Button btnExport;
         private Button btnClear;
 
@@ -64,6 +66,8 @@ namespace Linear_Programming_381.Forms
             btnBrowse = new Button();
             btnLoad = new Button();
             btnSolve = new Button();
+            btnRevisedSimplex = new Button();
+            btnCuttingPlane = new Button();
             btnExport = new Button();
             btnClear = new Button();
 
@@ -172,9 +176,47 @@ namespace Linear_Programming_381.Forms
             btnSolve.Click +=
                 btnSolve_Click;
 
+            // Revised Simplex
+            btnRevisedSimplex.Location =
+                new Point(225, 125);
+
+            btnRevisedSimplex.Size =
+                new Size(180, 45);
+
+            btnRevisedSimplex.Text =
+                "Revised Simplex";
+
+            btnRevisedSimplex.Font =
+                new Font(
+                    "Segoe UI",
+                    10F,
+                    FontStyle.Bold);
+
+            btnRevisedSimplex.Click +=
+                btnRevisedSimplex_Click;
+
+            // Cutting Plane
+            btnCuttingPlane.Location =
+                new Point(420, 125);
+
+            btnCuttingPlane.Size =
+                new Size(180, 45);
+
+            btnCuttingPlane.Text =
+                "Cutting Plane";
+
+            btnCuttingPlane.Font =
+                new Font(
+                    "Segoe UI",
+                    10F,
+                    FontStyle.Bold);
+
+            btnCuttingPlane.Click +=
+                btnCuttingPlane_Click;
+
             // Export
             btnExport.Location =
-                new Point(225, 125);
+                new Point(615, 125);
 
             btnExport.Size =
                 new Size(180, 45);
@@ -187,7 +229,7 @@ namespace Linear_Programming_381.Forms
 
             // Clear
             btnClear.Location =
-                new Point(420, 125);
+                new Point(800, 125);
 
             btnClear.Size =
                 new Size(180, 45);
@@ -284,6 +326,8 @@ namespace Linear_Programming_381.Forms
             Controls.Add(btnBrowse);
             Controls.Add(btnLoad);
             Controls.Add(btnSolve);
+            Controls.Add(btnRevisedSimplex);
+            Controls.Add(btnCuttingPlane);
             Controls.Add(btnExport);
             Controls.Add(btnClear);
 
