@@ -10,9 +10,13 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
     // Solves a maximization LP using the Revised Primal Simplex method:
     // instead of a full tableau, we maintain B-inverse (updated each
     // iteration via the Product Form of the Inverse) and "price out"
-    // reduced costs from it each iteration.
+    // reduced costs from it each iteration. Handles <=, >=, and =
+    // constraints via the Big-M method (surplus + artificial variables
+    // for >=, artificial variables for =, penalized with a large cost).
     public class RevisedSimplexSolver
     {
+        private const double BigM = 1_000_000;
+
         private int variableCount;
         private int constraintCount;
         private int totalColumns;
@@ -20,6 +24,8 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
         private double[] c = null!;
         private double[] b = null!;
         private List<string> columnNames = null!;
+        private Dictionary<int, (int row, double value)> specialColumns = null!;
+        private List<int> artificialColumns = null!;
 
         public Solution Solve(LPModel model)
         {
@@ -28,11 +34,10 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
 
             Solution solution = new();
 
-            // Basis starts as the slack columns (identity basis).
             int[] basis = new int[constraintCount];
             for (int i = 0; i < constraintCount; i++)
             {
-                basis[i] = variableCount + i;
+                basis[i] = FindInitialBasicColumn(i);
             }
 
             double[,] bInverse = Identity(constraintCount);
@@ -79,6 +84,18 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
                         CreateIterationOutput(
                             iteration, basis, bInverse, xB, y,
                             reducedCosts, -1, -1, null));
+
+                    int infeasibleRow = FindInfeasibleArtificialRow(basis, xB);
+                    if (infeasibleRow != -1)
+                    {
+                        solution.IsInfeasible = true;
+                        solution.IsFeasible = false;
+                        solution.Iterations.Add(
+                            "PROBLEM IS INFEASIBLE " +
+                            "(an artificial variable remains basic and positive).");
+                        return solution;
+                    }
+
                     solution.IsOptimal = true;
                     solution.IsFeasible = true;
                     ExtractSolution(model, basis, xB, solution);
@@ -151,21 +168,8 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
                     variable.Restriction != "bin")
                 {
                     throw new NotSupportedException(
-                        "Revised Simplex requires non-negative variables.");
-                }
-            }
-
-            foreach (Constraint constraint in model.Constraints)
-            {
-                if (constraint.Relation != "<=")
-                {
-                    throw new NotSupportedException(
-                        "Revised Simplex currently requires <= constraints.");
-                }
-                if (constraint.RightHandSide < 0)
-                {
-                    throw new NotSupportedException(
-                        "Negative RHS values require additional preprocessing.");
+                        "Revised Simplex requires non-negative variables " +
+                        "(unrestricted-in-sign variables are not yet supported).");
                 }
             }
         }
@@ -174,32 +178,136 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
         {
             variableCount = model.Variables.Count;
             constraintCount = model.Constraints.Count;
-            totalColumns = variableCount + constraintCount;
 
-            c = new double[totalColumns];
-            b = new double[constraintCount];
-            A = new double[constraintCount, variableCount];
             columnNames = new List<string>();
+            List<double> costList = new();
+            specialColumns = new Dictionary<int, (int row, double value)>();
+            artificialColumns = new List<int>();
 
             for (int j = 0; j < variableCount; j++)
             {
-                c[j] = model.Variables[j].GetSignedObjectiveCoefficient();
+                costList.Add(model.Variables[j].GetSignedObjectiveCoefficient());
                 columnNames.Add(model.Variables[j].Name);
             }
+
+            // Normalize every row so its RHS is >= 0 (flip sign + relation
+            // if needed), then attach slack / surplus+artificial / artificial
+            // columns depending on the (possibly flipped) relation.
+            double[][] normalizedCoefficients = new double[constraintCount][];
+            string[] normalizedRelations = new string[constraintCount];
+            b = new double[constraintCount];
 
             for (int i = 0; i < constraintCount; i++)
             {
                 Constraint constraint = model.Constraints[i];
-                List<double> coefficients = constraint.GetSignedCoefficients();
+                double[] coefficients = constraint.GetSignedCoefficients().ToArray();
+                string relation = constraint.Relation;
+                double rhs = constraint.RightHandSide;
 
-                for (int j = 0; j < variableCount; j++)
+                if (rhs < 0)
                 {
-                    A[i, j] = coefficients[j];
+                    for (int j = 0; j < coefficients.Length; j++)
+                    {
+                        coefficients[j] = -coefficients[j];
+                    }
+                    rhs = -rhs;
+                    relation = relation switch
+                    {
+                        "<=" => ">=",
+                        ">=" => "<=",
+                        _ => relation
+                    };
                 }
 
-                b[i] = constraint.RightHandSide;
-                columnNames.Add("s" + (i + 1));
+                normalizedCoefficients[i] = coefficients;
+                normalizedRelations[i] = relation;
+                b[i] = rhs;
             }
+
+            for (int i = 0; i < constraintCount; i++)
+            {
+                string relation = normalizedRelations[i];
+
+                if (relation == "<=")
+                {
+                    int slackIndex = columnNames.Count;
+                    columnNames.Add("s" + (i + 1));
+                    costList.Add(0);
+                    specialColumns[slackIndex] = (i, 1);
+                }
+                else if (relation == ">=")
+                {
+                    int surplusIndex = columnNames.Count;
+                    columnNames.Add("e" + (i + 1));
+                    costList.Add(0);
+                    specialColumns[surplusIndex] = (i, -1);
+
+                    int artificialIndex = columnNames.Count;
+                    columnNames.Add("a" + (i + 1));
+                    costList.Add(-BigM);
+                    specialColumns[artificialIndex] = (i, 1);
+                    artificialColumns.Add(artificialIndex);
+                }
+                else // "="
+                {
+                    int artificialIndex = columnNames.Count;
+                    columnNames.Add("a" + (i + 1));
+                    costList.Add(-BigM);
+                    specialColumns[artificialIndex] = (i, 1);
+                    artificialColumns.Add(artificialIndex);
+                }
+            }
+
+            totalColumns = columnNames.Count;
+            c = costList.ToArray();
+
+            A = new double[constraintCount, variableCount];
+            for (int i = 0; i < constraintCount; i++)
+            {
+                for (int j = 0; j < variableCount; j++)
+                {
+                    A[i, j] = normalizedCoefficients[i][j];
+                }
+            }
+        }
+
+        // The initial basic variable for a row is its artificial variable
+        // if one was added (>= or =), otherwise its slack (<=).
+        private int FindInitialBasicColumn(int row)
+        {
+            foreach (KeyValuePair<int, (int row, double value)> entry in specialColumns)
+            {
+                if (entry.Value.row == row &&
+                    entry.Value.value == 1 &&
+                    artificialColumns.Contains(entry.Key))
+                {
+                    return entry.Key;
+                }
+            }
+
+            foreach (KeyValuePair<int, (int row, double value)> entry in specialColumns)
+            {
+                if (entry.Value.row == row && entry.Value.value == 1)
+                {
+                    return entry.Key;
+                }
+            }
+
+            throw new InvalidOperationException(
+                "No basic column found for row " + row + ".");
+        }
+
+        private int FindInfeasibleArtificialRow(int[] basis, double[] xB)
+        {
+            for (int i = 0; i < constraintCount; i++)
+            {
+                if (artificialColumns.Contains(basis[i]) &&
+                    MathUtilities.IsPositive(xB[i]))
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         private double[] GetColumn(int j)
@@ -213,9 +321,9 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
                     column[i] = A[i, j];
                 }
             }
-            else
+            else if (specialColumns.TryGetValue(j, out var entry))
             {
-                column[j - variableCount] = 1;
+                column[entry.row] = entry.value;
             }
 
             return column;
@@ -361,16 +469,20 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
                 {
                     continue;
                 }
+                string artificialNote = artificialColumns.Contains(j)
+                    ? " (artificial, Big-M penalized)"
+                    : "";
                 output.AppendLine(
                     $"  {columnNames[j]}: c_bar = " +
-                    $"{MathUtilities.Round(reducedCosts[j]):0.###}");
+                    $"{MathUtilities.Round(reducedCosts[j]):0.###}{artificialNote}");
             }
             output.AppendLine();
 
             if (enteringColumn == -1)
             {
                 output.AppendLine(
-                    "All reduced costs <= 0 -> current solution is optimal.");
+                    "All reduced costs <= 0 -> current solution is optimal " +
+                    "(pending an artificial-variable feasibility check).");
                 return output.ToString();
             }
 
@@ -397,7 +509,12 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
             double objectiveValue = 0;
             for (int i = 0; i < constraintCount; i++)
             {
-                objectiveValue += c[basis[i]] * xB[i];
+                // Artificials should be at 0 here (feasibility already
+                // checked), so they don't distort the true objective value.
+                if (!artificialColumns.Contains(basis[i]))
+                {
+                    objectiveValue += c[basis[i]] * xB[i];
+                }
             }
             solution.ObjectiveValue = MathUtilities.Round(objectiveValue);
 
