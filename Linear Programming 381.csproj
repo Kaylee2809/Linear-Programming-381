@@ -10,17 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="Forms\MainForm.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MainForm.resx</DependentUpon>
+    <Compile Update="Forms\MainForm.cs">
+      <SubType>Form</SubType>
     </Compile>
-  </ItemGroup>
 
-  <ItemGroup>
+    <Compile Update="Forms\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+
     <EmbeddedResource Update="Forms\MainForm.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>MainForm.Designer.cs</LastGenOutput>
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 

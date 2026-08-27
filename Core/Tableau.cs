@@ -11,6 +11,7 @@ namespace Linear_Programming_381.Core
         public double[,] Values { get; set; }
         public List<string> ColumnNames { get; set; }
         public List<string> BasicVariables { get; set; }
+        public List<string> ArtificialVariables{get;set;}
         public int RowCount =>
             Values.GetLength(0);
         public int ColumnCount =>
@@ -18,11 +19,13 @@ namespace Linear_Programming_381.Core
         public Tableau(
             double[,] values,
             List<string> columnNames,
-            List<string> basicVariables)
+            List<string> basicVariables,
+            List<string>? artificialVariables = null)
         {
             Values = values;
             ColumnNames = columnNames;
             BasicVariables = basicVariables;
+            ArtificialVariables = artificialVariables ?? new List<string>();
         }
         public void Pivot(
             int pivotRow,
