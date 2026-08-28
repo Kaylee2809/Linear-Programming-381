@@ -165,12 +165,20 @@ namespace Linear_Programming_381.Forms
                 }
                 currentTableau = null;
                 txtOutput.Clear();
+                RevisedSimplexSolver solver =
+                    new RevisedSimplexSolver();
+                txtOutput.AppendText(
+                    "CANONICAL FORM (STANDARD FORM)\r\n");
+                txtOutput.AppendText(
+                    "========================================\r\n\r\n");
+                txtOutput.AppendText(
+                    solver.GetCanonicalFormDisplay(
+                        currentModel));
+                txtOutput.AppendText("\r\n");
                 txtOutput.AppendText(
                     "REVISED PRIMAL SIMPLEX (PRODUCT FORM / PRICE-OUT)\r\n");
                 txtOutput.AppendText(
                     "========================================\r\n\r\n");
-                RevisedSimplexSolver solver =
-                    new RevisedSimplexSolver();
                 currentSolution =
                     solver.Solve(
                         currentModel);
@@ -218,6 +226,18 @@ namespace Linear_Programming_381.Forms
                 }
                 currentTableau = null;
                 txtOutput.Clear();
+                CanonicalConverter converter =
+                    new CanonicalConverter();
+                Tableau initialTableau =
+                    converter.Convert(
+                        currentModel);
+                txtOutput.AppendText(
+                    "CANONICAL FORM / INITIAL TABLEAU\r\n");
+                txtOutput.AppendText(
+                    "========================================\r\n\r\n");
+                txtOutput.AppendText(
+                    initialTableau.ToFormattedString());
+                txtOutput.AppendText("\r\n");
                 txtOutput.AppendText(
                     "CUTTING PLANE ALGORITHM (GOMORY CUTS)\r\n");
                 txtOutput.AppendText(

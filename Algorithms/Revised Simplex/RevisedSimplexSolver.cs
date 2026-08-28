@@ -27,6 +27,47 @@ namespace Linear_Programming_381.Algorithms.Revised_Simplex
         private Dictionary<int, (int row, double value)> specialColumns = null!;
         private List<int> artificialColumns = null!;
 
+        // Builds the standard form (objective row + constraint rows with
+        // their slack/surplus/artificial columns) WITHOUT solving --
+        // used to display the Canonical Form before pivoting begins.
+        public string GetCanonicalFormDisplay(LPModel model)
+        {
+            Validate(model);
+            BuildStandardForm(model);
+
+            const int width = 12;
+            StringBuilder output = new();
+
+            output.Append("Row".PadRight(width));
+            foreach (string column in columnNames)
+            {
+                output.Append(column.PadLeft(width));
+            }
+            output.Append("RHS".PadLeft(width));
+            output.AppendLine();
+
+            for (int i = 0; i < constraintCount; i++)
+            {
+                output.Append(("R" + (i + 1)).PadRight(width));
+                for (int j = 0; j < totalColumns; j++)
+                {
+                    output.Append(
+                        GetColumn(j)[i].ToString("0.###").PadLeft(width));
+                }
+                output.Append(b[i].ToString("0.###").PadLeft(width));
+                output.AppendLine();
+            }
+
+            output.Append("Z".PadRight(width));
+            for (int j = 0; j < totalColumns; j++)
+            {
+                output.Append(c[j].ToString("0.###").PadLeft(width));
+            }
+            output.AppendLine();
+
+            return output.ToString();
+        }
+
         public Solution Solve(LPModel model)
         {
             Validate(model);

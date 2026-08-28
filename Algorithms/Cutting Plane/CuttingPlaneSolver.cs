@@ -321,6 +321,23 @@ namespace Linear_Programming_381.Algorithms.Cutting_Plane
             output.AppendLine();
             output.Append(tableau.ToFormattedString());
             output.AppendLine();
+
+            // The objective row IS the Price-Out row: its non-basic entries
+            // are each column's reduced cost after pricing out the current basis.
+            int objectiveRow = tableau.RowCount - 1;
+            output.AppendLine("Price-Out row (reduced costs, non-basic columns):");
+            for (int j = 0; j < tableau.ColumnCount - 1; j++)
+            {
+                if (tableau.BasicVariables.Contains(tableau.ColumnNames[j]))
+                {
+                    continue;
+                }
+                output.AppendLine(
+                    $"  {tableau.ColumnNames[j]}: c_bar = " +
+                    $"{MathUtilities.Round(tableau.Values[objectiveRow, j]):0.###}");
+            }
+            output.AppendLine();
+
             return output.ToString();
         }
 
